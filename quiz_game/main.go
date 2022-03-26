@@ -5,12 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
 	"gophercises/quiz_game/quiz"
 )
 
+var csvFileName = flag.String("csv", "problems.csv", "csv file with format of question,answer")
+var limit = flag.Duration("limit", time.Duration(10 * time.Second), "enter time limit for each question")
+
 func main() {
-	csvFileName := flag.String("csv", "problems.csv", "csv file with format of question,answer")
 	flag.Parse()
 
 	problems, err := quiz.Start(csvFileName)
@@ -21,15 +24,34 @@ func main() {
 
 	fmt.Println("Starting game: ")
 
+	askQuiz(problems)
+}
+
+func askQuiz(problems *[]quiz.Problem) {
 	var correctAns int
 	in := bufio.NewScanner(os.Stdin)
+	timer := time.NewTimer(*limit)
+	ansCh := make(chan string)
 	for c, problem := range *problems {
 		fmt.Printf("Prob #%d: %s: ", c+1, problem.Ques)
-		in.Scan()
-		if problem.Ans == in.Text() {
-			correctAns++
+		go askQuestion(in, c, problem, ansCh)
+		select {
+		case <-timer.C:
+			fmt.Printf("\n%d out of %d are correct.\n", correctAns, len(*problems))
+			return
+		case ans := <-ansCh:
+			if ans == problem.Ans {
+				correctAns++
+			}
+		/* default:  // just for testing
+			fmt.Println("this") */
 		}
 	}
 
 	fmt.Printf("\n%d out of %d are correct.\n", correctAns, len(*problems))
+}
+
+func askQuestion(in *bufio.Scanner, c int, problem quiz.Problem, ans chan<- string) {
+	in.Scan()
+	ans <-in.Text()
 }

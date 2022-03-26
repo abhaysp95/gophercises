@@ -12,6 +12,7 @@ import (
 
 var csvFileName = flag.String("csv", "problems.csv", "csv file with format of question,answer")
 var limit = flag.Duration("limit", time.Duration(10 * time.Second), "enter time limit for each question")
+var dur = flag.Duration("dur", time.Duration(5 * time.Second), " ")
 
 func main() {
 	flag.Parse()
@@ -29,29 +30,69 @@ func main() {
 
 func askQuiz(problems *[]quiz.Problem) {
 	var correctAns int
-	in := bufio.NewScanner(os.Stdin)
 	timer := time.NewTimer(*limit)
 	ansCh := make(chan string)
+	// updateAnsCh := make(chan bool)
+	// go askQuestion(problems, updateAnsCh, finishCh)
+
 	for c, problem := range *problems {
-		fmt.Printf("Prob #%d: %s: ", c+1, problem.Ques)
-		go askQuestion(in, c, problem, ansCh)
 		select {
 		case <-timer.C:
-			fmt.Printf("\n%d out of %d are correct.\n", correctAns, len(*problems))
+			fmt.Println("Timer Over!!!")
 			return
-		case ans := <-ansCh:
-			if ans == problem.Ans {
-				correctAns++
-			}
-		/* default:  // just for testing
-			fmt.Println("this") */
+		default:
+			go askQuestion(io, c, problem, ansCh)
 		}
 	}
 
+/* loop:
+	for {
+		select {
+		case <-timer.C:
+			fmt.Println("Time Over!!!")
+			break loop
+		case <-finishCh:
+			fmt.Println("Game Over!!!")
+			return
+		default:
+		}
+	} */
 	fmt.Printf("\n%d out of %d are correct.\n", correctAns, len(*problems))
 }
 
-func askQuestion(in *bufio.Scanner, c int, problem quiz.Problem, ans chan<- string) {
-	in.Scan()
-	ans <-in.Text()
+func askQuestion(io *bufio.Scanner, c int, problem quiz.Problem, ansCh chan<- string) {
+	fmt.Printf("Prob #%d: %s: ", c+1, problem.Ques)
+	timer := time.NewTimer(*dur)
+	for {
+		select {
+		case <-timer.C:
+		}
+	}
 }
+
+/* func askQuestion(problems *[]quiz.Problem, updateAns chan<- bool, finish chan<- struct{}) {
+	in := bufio.NewScanner(os.Stdin)
+	ansCh := make(chan string)
+	for c, problem := range *problems {
+		fmt.Printf("Prob #%d: %s: ", c+1, problem.Ques)
+		timer := time.NewTimer(*dur)
+		getAns(in, ansCh)
+		select {
+		case <-timer.C:
+			fmt.Printf("\ntime up\n")
+			continue
+		case ans := <-ansCh:
+			fmt.Println("update ans")
+			if ans == problem.Ans {
+				updateAns<- true
+			} else {
+				updateAns<- false
+			}
+		}
+	}
+}
+
+func getAns(in *bufio.Scanner, ans chan<- string) {
+	in.Scan()
+	ans<- in.Text()
+} */

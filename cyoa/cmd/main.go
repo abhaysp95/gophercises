@@ -4,9 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"gophercises/cyoa"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func main() {

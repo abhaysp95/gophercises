@@ -23,9 +23,15 @@ func main() {
 
 	story, err := cyoa.ReadStory(file)
 
-	h := cyoa.NewHandler(story)
+	tmpl := template.Must(template.New("").Parse(storyTmpl))
+	h := cyoa.NewHandler(story,
+		cyoa.WithTemplate(tmpl),
+		cyoa.WithPathFunc(pathFunc))
+
+	mux := http.NewServeMux()
+	mux.Handle("/story/", h)
 	fmt.Printf("Running on port :%d\n", *port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), h))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), mux))
 }
 
 // pathFunc is custom path parsing function which returns chapter for json

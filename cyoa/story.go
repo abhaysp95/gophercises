@@ -78,23 +78,48 @@ var defaultStoryTmpl = `
 	</body>
 </html>`
 
-func NewHandler(story Story) http.Handler {
-	return handler{story}
+type HandlerOption func(h *handler)
+
+func WithTemplate(t *template.Template) HandlerOption {
+	return func(h *handler) {
+		h.t = t
+	}
+}
+
+func WithPathFunc(fn func(req *http.Request) string) HandlerOption {
+	return func(h *handler) {
+		h.pathFn = fn
+	}
+}
+
+// functional options
+func NewHandler(story Story, opts ...HandlerOption) http.Handler {
+	h := handler{story, tpl, defaultPathFn}
+	for _, opt := range opts {
+		opt(&h)
+	}
+	return h
 }
 
 type handler struct {
 	s Story
+	t *template.Template
+	pathFn func(req *http.Request) string
 }
 
-func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+func defaultPathFn(req *http.Request) string {
 	path := strings.TrimSpace(req.URL.Path)
-
 	if path == "" || path == "/" {
 		path = "/intro"
 	}
+	return path[1:]
+}
 
-	if chapter, ok := h.s[path[1:]]; ok {
-		if err := tpl.Execute(w, chapter); err != nil {
+func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	path := h.pathFn(req)
+
+	if chapter, ok := h.s[path]; ok {
+		if err := h.t.Execute(w, chapter); err != nil {
 			log.Printf("%v\n", err)
 			http.Error(w, "something went wrong...", http.StatusInternalServerError)
 		}

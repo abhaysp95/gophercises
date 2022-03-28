@@ -2,14 +2,22 @@ package cyoa
 
 import (
 	"encoding/json"
+	"html/template"
 	"io"
 	"net/http"
 )
 
+func init() {
+	tpl = template.Must(template.New("").Parse(defaultStoryTmpl))
+}
+
+var tpl *template.Template
+
 var defaultStoryTmpl = `
-<!DOCTYPE html5>
+<!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<title>{{.Title}}</title>
 	</head>
 	<body>
@@ -20,11 +28,26 @@ var defaultStoryTmpl = `
 		<br>
 		<ul>
 			{{range .Options}}
-			<li><a href="/{{.Arc}}">.Text</a></li>
+			<li><a href="/{{.Arc}}">{{.Text}}</a></li>
 			{{end}}
 		</ul>
 	</body>
 </html>`
+
+func NewHandler(story Story) http.Handler {
+	return handler{story}
+}
+
+type handler struct {
+	s Story
+}
+
+func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	// there's always going to be an "intro" in the story
+	if err := tpl.Execute(w, h.s["intro"]); err != nil {
+		panic(err)
+	}
+}
 
 type Chapter struct {
 	Title string `json:"title"`

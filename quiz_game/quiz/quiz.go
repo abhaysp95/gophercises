@@ -5,6 +5,12 @@ import (
 	"os"
 )
 
+// TODO:
+// Add timer limit for each question
+// When the question time is over, quiz should move to next question
+// When total time is over quiz should be finished
+// Quiz should quit if for min(global quiz timer, sum(ques. timer))
+
 type Problem struct {
 	Ques string
 	Ans string

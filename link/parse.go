@@ -9,6 +9,12 @@ import (
 	"golang.org/x/net/html"
 )
 
+// TODO:
+// Update main as command
+// Provide flags and other stuffs for multiple files usage and to provide file path
+// Use better method for string concationation (maybe buffer/stream)
+// Update for any other edge cases (example included) if you find any
+
 // Link contains data of link <a href="">""</a>
 type Link struct {
 	Href string

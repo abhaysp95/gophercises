@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -36,17 +37,29 @@ func buildLink(n *html.Node) Link {
 	var ret Link
 	for _, a := range n.Attr {
 		if a.Key == "href" {
-			ret = Link{Href: a.Val}
+			ret = Link{
+				Href: a.Val,
+				Text: getText(n),
+			}
 			break  // ignore other attributes
 		}
 	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		if c.Type == html.TextNode {
-			ret.Text = c.Data
-			break
-		}
-	}
 	return ret
+}
+
+func getText(n *html.Node) string {
+	if n.Type == html.TextNode {
+		return strings.TrimSpace(n.Data)
+	}
+	if n.Type != html.ElementNode {  // don't really care about any other type
+		return ""
+	}
+
+	var text string
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		text += " " + getText(c)  // not an efficient way
+	}
+	return strings.Join(strings.Fields(text), " ")
 }
 
 func linkNodes(n *html.Node) []*html.Node {

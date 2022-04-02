@@ -1,7 +1,6 @@
 package link
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -27,7 +26,7 @@ func Parse(r io.Reader) ([]Link, error) {
 	nodes := linkNodes(rootNode)
 	for _, node := range nodes {
 		links = append(links, buildLink(node))
-		fmt.Println(node)
+		// fmt.Println(node)
 	}
 
 	return links, nil

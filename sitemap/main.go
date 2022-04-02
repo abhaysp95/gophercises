@@ -32,6 +32,9 @@ func bfs(urlStr string, depth int) []string {
 	for i := 0; i <= depth; i++ {
 	// for len(nq) != 0 {  // when you want to go all the way
 		q, nq = nq, make(map[string]bool)
+		if len(q) == 0 {
+			break
+		}
 		for page := range q {
 			// fmt.Println("=> ", page)
 			if _, ok := seen[page]; ok {
@@ -40,7 +43,9 @@ func bfs(urlStr string, depth int) []string {
 			seen[page] = true
 			for _, p := range get(page) {
 				// fmt.Println("==> ", page)
-				nq[p] = true
+				if _, ok := seen[p]; !ok {
+					nq[p] = true
+				}
 			}
 		}
 	}

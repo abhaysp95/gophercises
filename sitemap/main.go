@@ -12,13 +12,45 @@ import (
 
 func main() {
 	urlFlag := flag.String("url", "https://gophercises.com", "provide url to sitemap")
+	maxDepth := flag.Int("depth", 3, "maximum depth links the program traverse")
 
 	flag.Parse()
 
-	pages := get(*urlFlag)
+	pages := bfs(*urlFlag, *maxDepth)
 	for _, page := range pages {
 		fmt.Println(page)
 	}
+}
+
+func bfs(urlStr string, depth int) []string {
+	seen := make(map[string]bool)
+	var q map[string]bool
+	nq := map[string]bool {
+		urlStr: true,
+	}
+
+	for i := 0; i <= depth; i++ {
+	// for len(nq) != 0 {  // when you want to go all the way
+		q, nq = nq, make(map[string]bool)
+		for page := range q {
+			// fmt.Println("=> ", page)
+			if _, ok := seen[page]; ok {
+				continue
+			}
+			seen[page] = true
+			for _, p := range get(page) {
+				// fmt.Println("==> ", page)
+				nq[p] = true
+			}
+		}
+	}
+
+	ret := make([]string, 0, len(seen))
+	for k := range seen {
+		ret = append(ret, k)
+	}
+
+	return ret
 }
 
 func get(urlStr string) []string {

@@ -1,14 +1,27 @@
 package main
 
 import (
+	"encoding/xml"
 	"flag"
 	"fmt"
 	"gophercises/link"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
+
+const xmlns = "http://www.sitemap.org/schemas/sitemap/0.9"
+
+type loc struct {
+	Value string `xml:"loc"`
+}
+
+type urlSet struct {
+	Urls []loc `xml:"url"`
+	Xmlns string `xml:"xmlns,attr"`
+}
 
 func main() {
 	urlFlag := flag.String("url", "https://gophercises.com", "provide url to sitemap")
@@ -17,9 +30,25 @@ func main() {
 	flag.Parse()
 
 	pages := bfs(*urlFlag, *maxDepth)
-	for _, page := range pages {
-		fmt.Println(page)
+
+	var toXml = urlSet {
+		Urls: make([]loc, len(pages)),
+		Xmlns: xmlns,
 	}
+	for i := 0; i < len(pages); i++ {
+		toXml.Urls[i] = loc{pages[i]}
+	}
+	/* for _, page := range pages {
+		toXml.Urls = append(toXml.Urls, loc{page})
+	} */
+
+	fmt.Print(xml.Header)
+	enc := xml.NewEncoder(os.Stdout)
+	enc.Indent("", "\t")
+	if err := enc.Encode(toXml); err != nil {
+		panic(err)
+	}
+	fmt.Println()
 }
 
 func bfs(urlStr string, depth int) []string {

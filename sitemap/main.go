@@ -36,25 +36,36 @@ func get(urlStr string) []string {
 	}
 	base := baseUrl.String()
 
-	links := filter(base, hrefs(resp.Body, base))
+	links := filter(hrefs(resp.Body, base), withPrefix(base))
 
 	return links
 
 }
 
-func filter(base string, links []string) []string {
+func filter(links []string, keepFn func(string) bool) []string {
 	var ret []string
 
+	for _, link := range links {
+		if keepFn(link) {
+			ret = append(ret, link)
+		}
+	}
 
 	return ret
+}
+
+func withPrefix(pfx string) func(string) bool {
+	return func(link string) bool {
+		return strings.HasPrefix(link, pfx)
+	}
 }
 
 func hrefs(r io.Reader, base string) []string {
 	links, _ := link.Parse(r)
 
-	for _, link := range links {
+	/* for _, link := range links {
 		fmt.Println("==> ", link)
-	}
+	} */
 
 	var ret []string
 	for _, link := range links {

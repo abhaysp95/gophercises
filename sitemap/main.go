@@ -12,6 +12,11 @@ import (
 	"strings"
 )
 
+// TODO:
+// add a flag to provide name of xml file to write into
+// write logic to write links into xml file
+// see that if xml file name (flag) is not used, output is written to stdout
+
 const xmlns = "http://www.sitemap.org/schemas/sitemap/0.9"
 
 type loc struct {

@@ -6,6 +6,8 @@ package cmd
 
 import (
 	"fmt"
+	"gophercises/task/db"
+	"log"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -16,7 +18,9 @@ var doCmd = &cobra.Command{
 	Use:   "do",
 	Short: "mark the task complete",
 	Long: `Mark the provided task complete from the stored tasks
-		Example: task do <task>`,
+	Example: task do <task no.>
+
+task no. is the serial number you see as prefix when you run "task list"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ids := make([]int, 0, len(args))
 		for _, arg := range args {
@@ -26,7 +30,23 @@ var doCmd = &cobra.Command{
 			}
 			ids = append(ids, id)
 		}
-		fmt.Println(ids)
+		tasks, err := db.AllTask()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, id := range ids {
+			if id <= 0 || id > len(tasks) {
+				fmt.Println("invalid id:", id)
+				continue
+			}
+			task := tasks[id - 1]
+			err := db.DeleteTask(task.Key)
+			if err != nil {
+				fmt.Printf("Failed to mark '%d' task as complete. (%v)\n", id, err)
+			} else {
+				fmt.Printf("Marked '%d' task as complete.\n", id)
+			}
+		}
 	},
 }
 

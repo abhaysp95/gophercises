@@ -2,6 +2,11 @@ package cmd
 
 import "github.com/spf13/cobra"
 
+// TODO:
+// add subcommand "rm"
+// add subcommand "complete"
+// checkout "https://github.com/gophercises/task" to know more
+
 var rootCmd = &cobra.Command {
 	Use: "task",
 	Short: "task is a CLI task manager",

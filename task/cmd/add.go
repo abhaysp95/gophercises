@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"gophercises/task/db"
+	"log"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,7 +15,11 @@ var addCmd = &cobra.Command {
 	Long: `add task to this todo application`,
 	Run: func(cmd *cobra.Command, args []string) {
 		task := strings.Join(args, " ")
-		fmt.Printf("Added %q to your task list\n", task)
+		_, err := db.CreateTask(task)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("Added %q in your task list\n", task)
 	},
 }
 
